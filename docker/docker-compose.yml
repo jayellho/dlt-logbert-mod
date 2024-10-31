@@ -1,0 +1,8 @@
+services:
+  logbert:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    image: jayellho/logbert-for-dlt:${TAG}
+    volumes:
+      - ${dataset_path}:/root/.dataset
