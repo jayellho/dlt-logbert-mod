@@ -3,22 +3,19 @@
 # REMEMBER TO RUN THE FOLLOWING BEFORE RUNNING THIS SCRIPT:
 # chmod +x ./install_vsc.sh
 
-# Update package index
-sudo apt update -y
+# Define the specific file to be extracted
+file_to_extract="code-stable-x64-1730354220.tar.gz"
 
-# Install dependencies
-sudo apt install -y wget gpg
+# download the zipped installer file.
+wget -O "$file_to_extract" "https://update.code.visualstudio.com/1.95.1/linux-x64/stable"
 
-# Download Microsoft GPG key and add it to the system
-wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-sudo install -o root -g root -m 644 packages.microsoft.gpg /usr/share/keyrings/
-rm packages.microsoft.gpg
+# Extract the specified tar.gz file
+tar -xzvf "$file_to_extract"
 
-# Add VS Code repository
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
+# Define the extracted folder name
+extracted_folder="VSCode-linux-x64"
 
-# Update package index and install VS Code
-sudo apt update -y
-sudo apt install -y code
+# Create a 'data' directory inside the extracted folder
+mkdir -p "$extracted_folder/data"
 
-echo "Visual Studio Code installed successfully on Ubuntu."
+echo "Directory 'data' created inside $extracted_folder"

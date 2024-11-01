@@ -129,3 +129,6 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# ignore unzipped portable visual studio code folder
+scripts_for_pace/VSCode-linux-x64/
+
