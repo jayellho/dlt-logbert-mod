@@ -8,12 +8,17 @@ e.g. for HDFS dataset
 ```
 sh download_hdfs.sh
 ```
-2. Build Docker container:
+2. Set-up Docker container.
+- Change directory to folder `docker`: 
+```
+cd docker
+```
+- Rename `.env_docker` to `.env`.
+- Build Docker container:
 ```
 docker compose build
 ```
-
-3. Run Docker container:
+- Run Docker container:
 ```
 docker compose up
 ```
