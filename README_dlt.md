@@ -1,6 +1,16 @@
 # Pre-requisites
 1. Docker
 
+# Set-up using PACE cluster - for GPU compute.
+1. Spin up PACE cluster VM and go into it - read GaTech guides if unsure how.
+2. Install Visual Studio Code within VM:
+```
+cd scripts_for_pace
+chmod +x setup_for_pace.sh
+./setup_for_pace.sh
+```
+3. Run Visual Studio Code by going into `scripts_for_pace/VSCode-linux-x64` and clicking the executable `code`.
+
 
 # Set-up
 1. Download datasets by running shell script from folder `scripts`:
