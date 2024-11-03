@@ -4,10 +4,7 @@ file="${HOME}/.dataset/bgl/"
 output="${HOME}/.dataset/bgl/output/"
 
 # Check if the directory exists
-if [ ! -d "$output" ]; then
-  # Create the directory if it does not exist
-  mkdir -p "$output"
-  echo "Directory $output created."
+[ ! -d "$output" ] && mkdir -p "$output"
 
 if [ -e $file ]
 then
