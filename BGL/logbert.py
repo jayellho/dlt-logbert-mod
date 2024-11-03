@@ -17,7 +17,7 @@ from logdeep.tools.utils import *
 options = dict()
 options['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-options["output_dir"] = "~/.dataset/bgl/output/"
+options["output_dir"] = "/home/azureuser/.dataset/bgl/output/"
 options["model_dir"] = options["output_dir"] + "bert/"
 options["model_path"] = options["model_dir"] + "best_bert.pth"
 options["train_vocab"] = options['output_dir'] + 'train'
