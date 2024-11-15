@@ -96,11 +96,11 @@ def sample_raw_data(data_file, output_file, sample_window_size, sample_step_size
 
 
 if __name__ == "__main__":
-    data_dir = os.path.expanduser("~/.dataset/tbird/")
+    data_dir = os.path.expanduser("./")
     output_dir = "../output/tbird/"
-    raw_log_file = "Thunderbird.log"
-    sample_log_file = "Thunderbird_20M.log"
-    sample_window_size = 2*10**7
+    raw_log_file = "Thunderbird_8M.log"
+    sample_log_file = "Thunderbird_2M.log"
+    sample_window_size = 2*10**6
     sample_step_size = 10**4
     window_name = ''
     log_file = sample_log_file
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     #mins
     window_size = 1
     step_size = 0.5
-    train_ratio = 6000
+    train_ratio = 0.7
 
     ########
     # count anomaly
