@@ -9,6 +9,8 @@ from logparser import Spell, Drain
 import argparse
 from tqdm import tqdm
 from logdeep.dataset.session import sliding_window
+import time
+import json
 
 tqdm.pandas()
 pd.options.mode.chained_assignment = None
@@ -17,9 +19,11 @@ PAD = 0
 UNK = 1
 START = 2
 
-data_dir = os.path.expanduser("~/.dataset/bgl")
-output_dir = "~/.dataset/bgl/output/"
-log_file = "BGL.log"
+data_dir = os.path.expanduser("~/.dataset/bgl_2k")
+output_dir = "/root/.dataset/output/bgl_2k/"
+log_file = "BGL_2k.log"
+log_templates_file = os.path.join(output_dir, log_file + '_templates.csv')
+# docker_output_dir = "/opt/app/.dataset/output"
 
 
 # In the first column of the log, "-" indicates non-alert messages while others are alert messages.
@@ -33,6 +37,13 @@ def count_anomaly():
                 normal_size += 1
     print("total size {}, abnormal size {}".format(total_size, total_size - normal_size))
 
+def mapping():
+    log_temp = pd.read_csv(log_templates_file)
+    log_temp.sort_values(by = ["Occurrences"], ascending=False, inplace=True)
+    log_temp_dict = {event: idx+1 for idx , event in enumerate(list(log_temp["EventId"])) }
+    print(log_temp_dict)
+    with open (output_dir + f"{log_file}_log_templates.json", "w") as f:
+        json.dump(log_temp_dict, f)
 
 # def deeplog_df_transfer(df, features, target, time_index, window_size):
 #     """
@@ -55,9 +66,12 @@ def count_anomaly():
 
 
 def deeplog_file_generator(filename, df, features):
+    print(f"writing to: {filename}")
     with open(filename, 'w') as f:
         for _, row in df.iterrows():
+            print(f'writing: {row}')
             for val in zip(*row[features]):
+                print(f"val = {val}")
                 f.write(','.join([str(v) for v in val]) + ' ')
             f.write('\n')
 
@@ -111,6 +125,7 @@ if __name__ == "__main__":
     #########
 
     parse_log(data_dir, output_dir, log_file, 'drain')
+    mapping()
 
     #########
     # Count #
@@ -146,6 +161,16 @@ if __name__ == "__main__":
     deeplog_df = sliding_window(df[["timestamp", "Label", "EventId", "deltaT"]],
                                 para={"window_size": int(window_size)*60, "step_size": int(step_size) * 60}
                                 )
+    with open(output_dir + f"{log_file}_log_templates.json", "r") as f:
+        event_num = json.load(f)
+
+    deeplog_df["EventId"] = deeplog_df["EventId"].apply(lambda x: [event_num.get(item, -1) for item in x])
+    print(f"deeplog_df.columns = {deeplog_df.columns}")
+    print(f"deeplog_df = {deeplog_df.head()}")
+    print(f"deeplog_df just eventid = {deeplog_df['EventId']}")
+    # print(f"deeplog_df column EventId = {deeplog_df["EventId"]}")
+
+
 
     #########
     # Train #
@@ -168,6 +193,9 @@ if __name__ == "__main__":
     test_normal = df_normal[train_len:]
     deeplog_file_generator(os.path.join(output_dir, 'test_normal'), test_normal, ["EventId"])
     print("test normal size {}".format(normal_len - train_len))
+    print(f"test normal directory = {os.path.join(output_dir, 'test_normal')}")
+    print(f"df_normal columns = {df_normal.columns}")
+    print(f"df_normal looks like this: {df_normal['EventId'].head()}")
 
     del df_normal
     del train
@@ -181,3 +209,5 @@ if __name__ == "__main__":
     #df_abnormal["EventId"] = df_abnormal["EventId"].progress_apply(lambda e: event_index_map[e] if event_index_map.get(e) else UNK)
     deeplog_file_generator(os.path.join(output_dir,'test_abnormal'), df_abnormal, ["EventId"])
     print('test abnormal size {}'.format(len(df_abnormal)))
+    time.sleep(500)
+

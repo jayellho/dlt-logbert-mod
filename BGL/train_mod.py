@@ -76,7 +76,7 @@ def calculate_threshold(anomaly_scores, percentile=0.001):
     return threshold
 
 if __name__ == "__main__":
-    with open('./output/hdfs/train', 'r') as file: # CHANGE PATH
+    with open('/home/jl/.dataset/output/bgl_2k/train', 'r') as file: # CHANGE PATH
         content = file.read()
 
     train = [list(map(int, line.split())) for line in content.splitlines()]
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     trainer = BERTTrainer()
     trainer.train(data_loader, epochs=10) 
 
-    model_save_path = './output/bert_trained_model.pth'
+    model_save_path = '/home/jl/.dataset/output/bert_trained_model_BGL.pth'
     torch.save(trainer.model.state_dict(), model_save_path)
     print(f"model saved to {model_save_path}")
 

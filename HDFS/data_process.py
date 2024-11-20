@@ -11,9 +11,9 @@ import numpy as np
 from logparser import Spell, Drain
 
 # get [log key, delta time] as input for deeplog
-input_dir  = os.path.expanduser('~/.dataset/hdfs/')
-output_dir = '../output/hdfs/'  # The output directory of parsing results
-log_file   = "HDFS.log"  # The input log file name
+input_dir  = os.path.expanduser('~/.dataset/hdfs_2k/')
+output_dir = '../output/hdfs_2k/'  # The output directory of parsing results
+log_file   = "HDFS_2k.log"  # The input log file name
 
 log_structured_file = output_dir + log_file + "_structured.csv"
 log_templates_file = output_dir + log_file + "_templates.csv"
@@ -100,6 +100,9 @@ def generate_train_test(hdfs_sequence_file, n=None, ratio=0.3):
     test_normal = normal_seq.iloc[train_len:]
     test_abnormal = abnormal_seq
 
+
+    print(f"df for train is {train}")
+    print(f"df.columns = {train.columns}")
     df_to_file(train, output_dir + "train")
     df_to_file(test_normal, output_dir + "test_normal")
     df_to_file(test_abnormal, output_dir + "test_abnormal")
