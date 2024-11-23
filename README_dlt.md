@@ -33,6 +33,31 @@ docker compose build
 docker compose up
 ```
 
+# Activate virtual environment.
+Purpose of virtual environment:
+- Maintain package consistency.
+- Prevent package dependency issues.
+- Isolate environment from current system environment.
+
+1. Change directory into where `environment.yml` is.
+```
+cd environment
+```
+
+2. Create the environment `logbert` as specified in `environment.yml`.
+```
+conda env create -f environment.yml
+```
+
+3. Activate the environment `logbert`.
+```
+conda activate logbert
+```
+
+4. Deactivate the environment.
+```
+conda deactivate
+```
 
 # TO-DOS:
 1. Generalise Docker container for other datasets - right now it's just for BGL's data_process.py.
