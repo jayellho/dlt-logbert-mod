@@ -132,3 +132,6 @@ dmypy.json
 # ignore unzipped portable visual studio code folder
 scripts_for_pace/VSCode-linux-x64/
 
+# ignore all input and output folders generated.
+*/input/
+*/output/
