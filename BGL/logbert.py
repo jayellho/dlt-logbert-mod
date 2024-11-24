@@ -14,10 +14,21 @@ from bert_pytorch.dataset import WordVocab
 from bert_pytorch import Predictor, Trainer
 from logdeep.tools.utils import *
 
+import os
+from dotenv import load_dotenv
+
+# load paths from .env
+load_dotenv()
+data_dir = os.path.expanduser(os.getenv("DATA_DIR"))
+output_dir = os.path.expanduser(os.getenv("OUTPUT_DIR"))
+log_file = os.path.expanduser(os.getenv("LOG_FILE"))
+model_save_path = os.path.expanduser(os.getenv("MODEL_DIR"))
+
 options = dict()
 options['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-options["output_dir"] = "/home/azureuser/.dataset/bgl/output/"
+# options["output_dir"] = "/home/azureuser/.dataset/bgl/output/" # TEMP TO DELETE AFT TESTING.
+options["output_dir"] = output_dir
 options["model_dir"] = options["output_dir"] + "bert/"
 options["model_path"] = options["model_dir"] + "best_bert.pth"
 options["train_vocab"] = options['output_dir'] + 'train'

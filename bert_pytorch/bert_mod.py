@@ -1,11 +1,17 @@
 import torch
 from transformers import BertConfig, BertForMaskedLM, AdamW
 from scipy.stats import gmean
+import os
+from dotenv import load_dotenv
 
+# load params from .env
+load_dotenv('../BGL/.env')
+max_seq_len=os.getenv("MAX_SEQ_LEN")
+max_tokens=os.getenv("MAX_TOKENS")
 
 class BERTTrainer:
-    def __init__(self, vocab_size=107, hidden_size=768, num_hidden_layers=12, num_attention_heads=12,
-                 intermediate_size=3072, max_position_embeddings=300, type_vocab_size=2, layer_norm_eps=1e-12, lr=1e-4):
+    def __init__(self, vocab_size=int(max_tokens)+6, hidden_size=768, num_hidden_layers=12, num_attention_heads=12,
+                 intermediate_size=3072, max_position_embeddings=int(max_seq_len)+2, type_vocab_size=2, layer_norm_eps=1e-12, lr=1e-4):
         self.config = BertConfig(
             vocab_size=vocab_size,
             hidden_size=hidden_size,

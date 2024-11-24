@@ -59,10 +59,12 @@ sh init.sh
 ```
 python data_process.py
 ```
+
 4. If `MAX_SEQ_LEN` is larger than 510, truncate.
 ```
 python truncate_tokens.py
 ```
+
 5. Train the BERT model.
 * NOTE 1: Truncate all sequences in `train`/`test_normal`/`test_abnormal` to a maximum of 510 tokens.
 * NOTE 2: Edit `MAX_SEQ_LEN` and `MAX_TOKENS` in `.env`. `MAX_SEQ_LEN` should be at most 510; `MAX_TOKENS` should be the maximum value of any token in `train`/`test_normal`/`test_abnormal`.
@@ -76,6 +78,7 @@ python val_only_mod.py
 ```
 
 7. Compute metrics.
+* NOTE: set `THRESHOLD` in `.env` to output from running `val_only_mod.py`.
 ```
 python deploy_mod.py
 ```

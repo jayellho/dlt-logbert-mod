@@ -5,15 +5,34 @@ import torch
 import random
 from bert_pytorch.bert_mod import BERTTrainer, BERTValidator
 
-def bert_val_preprocess(val_data):
+import os
+from dotenv import load_dotenv
+
+
+# load params from .env
+load_dotenv()
+max_seq_len=os.getenv("MAX_SEQ_LEN")
+
+# load paths from .env
+data_dir = os.path.expanduser(os.getenv("DATA_DIR"))
+output_dir = os.path.expanduser(os.getenv("OUTPUT_DIR"))
+log_file = os.path.expanduser(os.getenv("LOG_FILE"))
+model_save_path = os.path.expanduser(os.getenv("MODEL_DIR"))
+
+# construct other paths.
+train_file = os.path.join(output_dir, 'train')
+test_normal_file = os.path.join(output_dir, 'test_normal')
+test_abnormal_file = os.path.join(output_dir, 'test_abnormal')
+
+def bert_val_preprocess(val_data, max_seq_len=int(max_seq_len)+2):
     input_data = []
     mask_data = []
     for seq in val_data:
-        mask = [0]*300
+        mask = [0]*max_seq_len
         seq = [3] + seq
         seq.append(2)
         mask[:len(seq)] = [1] * len(seq)
-        seq = seq + [0] * (300 - len(seq))
+        seq = seq + [0] * (max_seq_len - len(seq))
         input_data.append(seq)
         mask_data.append(mask)
     return torch.tensor(input_data), torch.tensor(mask_data)
@@ -27,11 +46,11 @@ def calculate_threshold(anomaly_scores, percentile=0.001):
 
 if __name__ == "__main__":
     trainer = BERTTrainer()
-    model_save_path = './output/bert_trained_model.pth'
+    # model_save_path = './output/bert_trained_model.pth' # TEMP TO DELETE
     trainer.model.load_state_dict(torch.load(model_save_path, map_location=torch.device('cpu')))
     validator = BERTValidator(model=trainer.model)
 
-    with open('./output/hdfs/train', 'r') as file:
+    with open(train_file, 'r') as file:
         content = file.read()
     train = [list(map(int, line.split())) for line in content.splitlines()]
     train = [[item + 4 for item in sublist] for sublist in train]
