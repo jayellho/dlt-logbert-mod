@@ -63,7 +63,7 @@ def calculate_harmonic_gmean(token_probs):
     gmean_reverse_probs = gmean(reverse_probs)
 
     # Calculate harmonic mean of geometric means
-    harmonic_gmean = (2 * gmean_probs * gmean_reverse_probs) / (gmean_probs + gmean_reverse_probs)
+    harmonic_gmean = (2 * (1-gmean_probs) * gmean_reverse_probs) / ((1-gmean_probs) + gmean_reverse_probs)
     return harmonic_gmean
 
 
