@@ -54,7 +54,7 @@ if __name__ == "__main__":
     normal = [list(map(int, line.split())) for line in normal.splitlines()]
     normal = [[item + 4 for item in sublist] for sublist in normal]
     random.shuffle(normal)
-    normal = normal[:1000]
+    normal = normal[:4000]
     total = len(normal)
 
     with open(test_abnormal_file, 'r') as file:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     abnormal = [list(map(int, line.split())) for line in abnormal.splitlines()]
     abnormal = [[item + 4 for item in sublist] for sublist in abnormal]
     random.shuffle(abnormal)
-    abnormal = abnormal[:1000]
+    abnormal = abnormal[:4000]
     total += len(abnormal)
 
     normal_data, normal_mask = bert_deploy_preprocess(normal)
