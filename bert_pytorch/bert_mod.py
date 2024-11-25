@@ -3,11 +3,69 @@ from transformers import BertConfig, BertForMaskedLM, AdamW
 from scipy.stats import gmean
 import os
 from dotenv import load_dotenv
+import numpy as np
 
 # load params from .env
 load_dotenv('../BGL/.env')
 max_seq_len=os.getenv("MAX_SEQ_LEN")
 max_tokens=os.getenv("MAX_TOKENS")
+
+# helper functions.
+def calculate_top_k_percent_gmean(token_probs, k_percent):
+    """
+    Calculate the geometric mean over the top k percent of token probabilities.
+
+    Args:
+        token_probs (list): List of token probabilities for a sequence.
+        k_percent (float): Percentage of top probabilities to consider (between 0 and 100).
+        
+    Returns:
+        float: The geometric mean of the top k percent probabilities.
+    """
+    if not token_probs or k_percent <= 0:
+        return 0.0
+
+    # Ensure k_percent is within valid range (0, 100]
+    k_percent = min(max(k_percent, 0), 100)
+
+    # Sort probabilities in descending order
+    token_probs_sorted = sorted(token_probs, reverse=True)
+    
+    # Calculate the number of tokens to consider
+    k = max(1, int(len(token_probs_sorted) * (k_percent / 100.0)))
+    top_k_probs = token_probs_sorted[:k]
+    
+    # Calculate geometric mean of the top k percent
+    return gmean(top_k_probs)
+
+def calculate_harmonic_gmean(token_probs):
+    """
+    Calculate the harmonic mean of the geometric mean of probabilities and reverse probabilities.
+    
+    Args:
+        token_probs (list): List of token probabilities.
+    
+    Returns:
+        float: Harmonic mean of the geometric means.
+    """
+    if not token_probs:
+        return 0.0
+
+    # Reverse probabilities (1 - p_i for each probability)
+    reverse_probs = [1 - p for p in token_probs]
+
+    # Ensure no zero probabilities to avoid math domain errors
+    token_probs = np.clip(token_probs, 1e-10, 1.0)
+    reverse_probs = np.clip(reverse_probs, 1e-10, 1.0)
+
+    # Calculate geometric means
+    gmean_probs = gmean(token_probs)
+    gmean_reverse_probs = gmean(reverse_probs)
+
+    # Calculate harmonic mean of geometric means
+    harmonic_gmean = (2 * gmean_probs * gmean_reverse_probs) / (gmean_probs + gmean_reverse_probs)
+    return harmonic_gmean
+
 
 class BERTTrainer:
     def __init__(self, vocab_size=int(max_tokens)+6, hidden_size=768, num_hidden_layers=12, num_attention_heads=12,
@@ -79,8 +137,26 @@ class BERTValidator:
             token_prob = token_probs[original_token_id].item()  # Probability of original token
             anomaly_scores.append(token_prob)
 
+        
+        
+        # experiment 1: sequence score = geometric mean over probability scores. result = 1 - sequence score.
         sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
-        return 1 - sequence_score
+        res = 1 - sequence_score
+
+        # # experiment 2: sequence score = geometric mean over top k% probability scores, where k = 20, 40 and 60. result = 1 - sequence score.
+        # sequence_score = calculate_top_k_percent_gmean(anomaly_scores, 20) # CHANGE THE NUMBER HERE.
+        # res = 1 - sequence_score
+
+        # # experiment 3: result = geometric mean of (1 - probability) for each token.
+        # anomaly_scores = [1-p for p in anomaly_scores]
+        # sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
+        # res = sequence_score
+
+        # # experiment 4: result = harmonic mean of (geometric mean of reverse probabilities + geometric mean of probabilities). formula: harmonic_gmean = (2 * gmean_probs * gmean_reverse_probs) / (gmean_probs + gmean_reverse_probs)
+        # sequence_score = calculate_harmonic_gmean(anomaly_scores)
+        # res = sequence_score
+
+        return res
 
     def validate_batch(self, sequences, masks):
         sequence_scores = []
@@ -116,8 +192,24 @@ class BERTDeploy:
             token_prob = token_probs[original_token_id].item()  # Probability of original token
             anomaly_scores.append(token_prob)
 
+        # experiment 1: sequence score = geometric mean over probability scores. result = 1 - sequence score.
         sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
-        return 1 - sequence_score
+        res = 1 - sequence_score
+
+        # # experiment 2: sequence score = geometric mean over top k% probability scores, where k = 20, 40 and 60. result = 1 - sequence score.
+        # sequence_score = calculate_top_k_percent_gmean(anomaly_scores, 20) # CHANGE THE NUMBER HERE.
+        # res = 1 - sequence_score
+
+        # # experiment 3: result = geometric mean of (1 - probability) for each token.
+        # anomaly_scores = [1-p for p in anomaly_scores]
+        # sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
+        # res = sequence_score
+
+        # # experiment 4: result = harmonic mean of (geometric mean of reverse probabilities + geometric mean of probabilities). formula: harmonic_gmean = (2 * gmean_probs * gmean_reverse_probs) / (gmean_probs + gmean_reverse_probs)
+        # sequence_score = calculate_harmonic_gmean(anomaly_scores)
+        # res = sequence_score
+
+        return res
 
     def score_batch(self, sequences, masks):
         sequence_scores = []
