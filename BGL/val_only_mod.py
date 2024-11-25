@@ -37,12 +37,15 @@ def bert_val_preprocess(val_data, max_seq_len=int(max_seq_len)+2):
         mask_data.append(mask)
     return torch.tensor(input_data), torch.tensor(mask_data)
 
-def calculate_threshold(anomaly_scores, percentile=0.001):
-    sorted_scores = sorted(anomaly_scores)
-    index = int((1 - percentile) * len(sorted_scores))
-    index = min(max(index, 0), len(sorted_scores) - 1)
-    threshold = sorted_scores[index]
-    return threshold
+def calculate_threshold(anomaly_scores, percentiles=[0.01, 0.001]):
+    thresholds = []
+    for i in percentiles:
+        sorted_scores = sorted(anomaly_scores)
+        index = int((1 - i) * len(sorted_scores))
+        index = min(max(index, 0), len(sorted_scores) - 1)
+        threshold = sorted_scores[index]
+        thresholds.append(threshold)
+    return thresholds
 
 if __name__ == "__main__":
     trainer = BERTTrainer()
