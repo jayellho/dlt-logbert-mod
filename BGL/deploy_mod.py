@@ -66,10 +66,10 @@ if __name__ == "__main__":
     total += len(abnormal)
 
     normal_data, normal_mask = bert_deploy_preprocess(normal)
-    normal_anomaly_scores = deploy.score_batch(normal_data, normal_mask)   
+    normal_anomaly_scores = deploy.score_batch(normal_data, normal_mask, 1, k=40) # CHANGE THE THIRD ARGUMENT FOR EXPERIMENT NUMBER
 
     abnormal_data, abnormal_mask = bert_deploy_preprocess(abnormal)
-    abnormal_anomaly_scores = deploy.score_batch(abnormal_data, abnormal_mask)  
+    abnormal_anomaly_scores = deploy.score_batch(abnormal_data, abnormal_mask, 1, k=40)  # CHANGE THE THIRD ARGUMENT FOR EXPERIMENT NUMBER
     # TODO: save anomaly scores to file to retain for further ablation
 
     with open(normal_anomalies_file, mode='w', newline='') as file:

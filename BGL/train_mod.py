@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
     validator = BERTValidator(model=trainer.model)
 
-    anomaly_scores = validator.validate_batch(val_data, val_mask)   
+    anomaly_scores = validator.validate_batch(val_data, val_mask, 1)   
     print(calculate_threshold(anomaly_scores))
 
 

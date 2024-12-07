@@ -119,7 +119,7 @@ class BERTValidator:
         self.model.to(self.device)
         self.model.eval()
 
-    def validate(self, sequence, mask):
+    def validate(self, sequence, mask, experiment_no, k=40): # k pertains to experiment 4.
         anomaly_scores = []
 
         input_ids = sequence.unsqueeze(0).to(self.device)
@@ -138,23 +138,31 @@ class BERTValidator:
             anomaly_scores.append(token_prob)
 
         
-        
         # experiment 1: sequence score = geometric mean over probability scores. result = 1 - sequence score.
-        sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
-        res = 1 - sequence_score
+        if experiment_no == 1:
+            sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
+            res = 1 - sequence_score
 
-        # # experiment 2: sequence score = geometric mean over top k% probability scores, where k = 20, 40 and 60. result = 1 - sequence score.
+        # experiment 2: result = geometric mean of (1 - probability) for each token.
+        elif experiment_no == 2:
+            anomaly_scores = [1-p for p in anomaly_scores]
+            sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
+            res = sequence_score
+
+        # experiment 3: result = harmonic mean of (geometric mean of reverse probabilities + geometric mean of probabilities). formula: harmonic_gmean = (2 * gmean_probs * gmean_reverse_probs) / (gmean_probs + gmean_reverse_probs)
+        elif experiment_no == 3:
+            sequence_score = calculate_harmonic_gmean(anomaly_scores)
+            res = sequence_score
+
+        # experiment 4: experiment 3 but over top k% anomaly scores, where k = 20, 40, 60.
+        elif experiment_no == 4:
+            k = max(1, len(anomaly_scores) * (k/100))
+            top_k_anomaly_scores = sorted(anomaly_scores, reverse=True)[:k]
+            sequence_score = calculate_harmonic_gmean(top_k_anomaly_scores)
+
+        # # old experiment 4: sequence score = geometric mean over top k% anomaly scores, where k = 20, 40 and 60. result = 1 - sequence score.
         # sequence_score = calculate_top_k_percent_gmean(anomaly_scores, 20) # CHANGE THE NUMBER HERE.
         # res = 1 - sequence_score
-
-        # # experiment 3: result = geometric mean of (1 - probability) for each token.
-        # anomaly_scores = [1-p for p in anomaly_scores]
-        # sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
-        # res = sequence_score
-
-        # # experiment 4: result = harmonic mean of (geometric mean of reverse probabilities + geometric mean of probabilities). formula: harmonic_gmean = (2 * gmean_probs * gmean_reverse_probs) / (gmean_probs + gmean_reverse_probs)
-        # sequence_score = calculate_harmonic_gmean(anomaly_scores)
-        # res = sequence_score
 
         return res
 
@@ -174,7 +182,7 @@ class BERTDeploy:
         self.model.to(self.device)
         self.model.eval()
 
-    def deploy(self, sequence, mask):
+    def deploy(self, sequence, mask, experiment_no, k=40): # k only applies for experiment 4 which needs top k% anomaly scores
         anomaly_scores = []
 
         input_ids = sequence.unsqueeze(0).to(self.device)
@@ -193,28 +201,32 @@ class BERTDeploy:
             anomaly_scores.append(token_prob)
 
         # experiment 1: sequence score = geometric mean over probability scores. result = 1 - sequence score.
-        sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
-        res = 1 - sequence_score
+        if experiment_no == 1:
+            sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
+            res = 1 - sequence_score
 
-        # # experiment 2: sequence score = geometric mean over top k% probability scores, where k = 20, 40 and 60. result = 1 - sequence score.
-        # sequence_score = calculate_top_k_percent_gmean(anomaly_scores, 20) # CHANGE THE NUMBER HERE.
-        # res = 1 - sequence_score
+        # experiment 2: result = geometric mean of (1 - probability) for each token.
+        elif experiment_no == 2:
+            anomaly_scores = [1-p for p in anomaly_scores]
+            sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
+            res = sequence_score
 
-        # # experiment 3: result = geometric mean of (1 - probability) for each token.
-        # anomaly_scores = [1-p for p in anomaly_scores]
-        # sequence_score = gmean(anomaly_scores) if anomaly_scores else 0.0
-        # res = sequence_score
+        # experiment 3: result = harmonic mean of (geometric mean of reverse probabilities + geometric mean of probabilities). formula: harmonic_gmean = (2 * gmean_probs * gmean_reverse_probs) / (gmean_probs + gmean_reverse_probs)
+        elif experiment_no == 3:
+            sequence_score = calculate_harmonic_gmean(anomaly_scores)
+            res = sequence_score
 
-        # # experiment 4: result = harmonic mean of (geometric mean of reverse probabilities + geometric mean of probabilities). formula: harmonic_gmean = (2 * gmean_probs * gmean_reverse_probs) / (gmean_probs + gmean_reverse_probs)
-        # sequence_score = calculate_harmonic_gmean(anomaly_scores)
-        # res = sequence_score
-
+        # experiment 4: experiment 3 but over top k% anomaly scores, where k = 20, 40, 60.
+        elif experiment_no == 4:
+            k = max(1, len(anomaly_scores) * (k/100))
+            top_k_anomaly_scores = sorted(anomaly_scores, reverse=True)[:k]
+            sequence_score = calculate_harmonic_gmean(top_k_anomaly_scores)
         return res
 
-    def score_batch(self, sequences, masks):
+    def score_batch(self, sequences, masks, experiment_no, k=40):
         sequence_scores = []
         for i in range(len(sequences)):
-            anomaly_score = self.deploy(sequences[i], masks[i])
+            anomaly_score = self.deploy(sequences[i], masks[i], experiment_no, k)
             sequence_scores.append(anomaly_score)
             if i % 100 == 0:
                 print(f'{i} sequences complete')
