@@ -106,7 +106,7 @@ if __name__ == "__main__":
     trainer = BERTTrainer()
     trainer.train(data_loader, epochs=5) 
 
-    model_save_path = './output/bert_trained_model3.pth'
+    model_save_path = './output/bert_trained_model2.pth'
     torch.save(trainer.model.state_dict(), model_save_path)
     print(f"model saved to {model_save_path}")
 
