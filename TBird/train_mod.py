@@ -27,10 +27,16 @@ def bert_train_preprocess(train_data):
     masked_data = []
     labels = []
     attention_mask = []
-    for seq in train_data:
-        original_seq = seq[:]
-        lbls = [-100]*300
-        mask = [0]*300
+
+    for i, seq in enumerate(train_data):
+        if len(seq) < thres - 2:
+          original_seq = seq[:]
+        else:
+          seq = seq[:510]
+          original_seq = seq
+        lbls = [-100]*512
+        mask = [0]*512
+        #print(f"iter {i}: ", original_seq)
 
         num_to_mask = math.ceil(0.15 * len(seq))
         mask_idx = random.sample(range(len(seq)), num_to_mask)
@@ -40,12 +46,12 @@ def bert_train_preprocess(train_data):
             if prob < 0.8:
                 seq[i] = 4
             elif prob < 0.9:
-                seq[i] = random.randrange(5, 51)
+                seq[i] = random.randrange(5, 766)
         seq = [3] + seq
         seq.append(2)
 
         mask[:len(seq)] = [1] * len(seq)
-        seq = seq + [0] * (300 - len(seq))
+        seq = seq + [0] * (512 - len(seq))
         masked_data.append(seq)
         labels.append(lbls)
         attention_mask.append(mask)
@@ -58,25 +64,36 @@ def bert_val_preprocess(val_data):
     input_data = []
     mask_data = []
     for seq in val_data:
-        mask = [0]*300
-        seq = [3] + seq
-        seq.append(2)
+        if len(seq) < 512:
+            mask = [0]*512
+            seq = [3] + seq
+            seq.append(2)
 
-        mask[:len(seq)] = [1] * len(seq)
-        seq = seq + [0] * (300 - len(seq))
-        input_data.append(seq)
-        mask_data.append(mask)
+            mask[:len(seq)] = [1] * len(seq)
+            seq = seq + [0] * (512 - len(seq))
+            input_data.append(seq)
+            mask_data.append(mask)
     return torch.tensor(input_data), torch.tensor(mask_data)
 
-def calculate_threshold(anomaly_scores, percentile=0.001):
-    sorted_scores = sorted(anomaly_scores)
-    index = int((1 - percentile) * len(sorted_scores))
-    index = min(max(index, 0), len(sorted_scores) - 1)
-    threshold = sorted_scores[index]
-    return threshold
+def calculate_threshold(anomaly_scores, percentiles=[0.01, 0.001]):
+    thresholds = []
+    for i in percentiles:
+        sorted_scores = sorted(anomaly_scores)
+        index = int((1 - i) * len(sorted_scores))
+        index = min(max(index, 0), len(sorted_scores) - 1)
+        threshold = sorted_scores[index]
+        thresholds.append(threshold)
+    return thresholds
 
 if __name__ == "__main__":
-    with open('./output/hdfs/train', 'r') as file: # CHANGE PATH
+    parser = argparse.ArgumentParser(description="Run BERT validation with an experiment number.")
+    parser.add_argument('--experiment', type=int, required=True, 
+                        help="Experiment number to pass to the validator.")
+    args = parser.parse_args()
+    
+    experiment_no = args.experiment
+
+    with open('../output/tbird/train', 'r') as file: # CHANGE PATH
         content = file.read()
 
     train = [list(map(int, line.split())) for line in content.splitlines()]
@@ -88,18 +105,18 @@ if __name__ == "__main__":
     train_data = bert_train_preprocess(train_data)
     train_dataset = BERTDataset(train_data)
     val_data, val_mask = bert_val_preprocess(val_data)
-    data_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    data_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
     print('data prepped')
-    trainer = BERTTrainer()
+    trainer = BERTTrainer(vocab_size = 800, max_position_embeddings=512)
     trainer.train(data_loader, epochs=10) 
 
-    model_save_path = './output/bert_trained_model.pth'
+    model_save_path = '../output/tbird/bert_trained_model.pth'
     torch.save(trainer.model.state_dict(), model_save_path)
     print(f"model saved to {model_save_path}")
 
     validator = BERTValidator(model=trainer.model)
 
-    anomaly_scores = validator.validate_batch(val_data, val_mask)   
+    anomaly_scores = validator.validate_batch(val_data, val_mask, experiment_no)   
     print(calculate_threshold(anomaly_scores))
 
 

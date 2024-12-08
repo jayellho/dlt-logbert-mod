@@ -166,10 +166,10 @@ class BERTValidator:
 
         return res
 
-    def validate_batch(self, sequences, masks):
+    def validate_batch(self, sequences, masks, experiment_no):
         sequence_scores = []
         for i in range(len(sequences)):
-            anomaly_score = self.validate(sequences[i], masks[i])
+            anomaly_score = self.validate(sequences[i], masks[i], experiment_no)
             sequence_scores.append(anomaly_score)
             if i % 100 == 0:
                 print(f'{i} sequences complete')
