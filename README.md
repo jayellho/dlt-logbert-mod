@@ -1,5 +1,12 @@
-# LogBERT: Log Anomaly Detection via BERT
-### [ARXIV](https://arxiv.org/abs/2103.04475) 
+# Modified LogBERT: Log Anomaly Detection via BERT
+
+This repository includes work for the course CS8803 Deep Learning for Text Data that builds on the original LogBERT implementation for anomaly detection.
+
+Our paper is in the `report` folder in this repository.
+
+
+The reference repository and paper for LogBERT is listed here:
+[ARXIV](https://arxiv.org/abs/2103.04475) 
 
 This repository provides the implementation of Logbert for log anomaly detection. 
 The process includes downloading raw data online, parsing logs into structured data, 
