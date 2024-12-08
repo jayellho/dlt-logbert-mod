@@ -38,7 +38,7 @@ Reference: https://docs.conda.io/en/latest/miniconda.html
 ## Experiment
 Logbert and other baseline models are implemented on [HDFS](https://github.com/logpai/loghub/tree/master/HDFS), [BGL](https://github.com/logpai/loghub/tree/master/BGL), and [thunderbird]() datasets
 
-### HDFS example
+### Run on HDFS Dataset
 ```shell script
 
 cd HDFS
@@ -48,26 +48,19 @@ sh init.sh
 # process data
 python data_process.py
 
+#run our Experiment 1 on our model
+python train_mod.py
+------------------------------------------------------
+**if you have a trained model already
+python val_only_mod.py --experiment 1
+------------------------------------------------------
+python deploy_mod.py --experiment 1 --threshold {0.-1}
+
 #run logbert
 python logbert.py vocab
 python logbert.py train
 python logbert.py predict
 
-#run deeplog
-python deeplog.py vocab
-# set options["vocab_size"] = <vocab output> above
-python deeplog.py train
-python deeplog.py predict 
-
-#run loganomaly
-python loganomaly.py vocab
-# set options["vocab_size"] = <vocab output> above
-python loganomaly.py train
-python loganomaly.py predict
-
-#run baselines
-
-baselines.ipynb
 ```
 
 ### Folders created during execution
