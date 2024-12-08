@@ -63,6 +63,30 @@ python logbert.py predict
 
 ```
 
+### Run on Thunderbird Dataset
+```shell script
+cd TBird
+
+sh init.sh
+
+# process data
+python data_process.py
+
+# run base logbert
+python logbert.py vocab
+python logbert.py train
+python logbert.py predict
+
+# run modified logbert
+python train_mod.py
+------------------------------------------------------
+# if you have a trained model already (runs experiment 1)
+python val_only_mod.py --experiment 1
+------------------------------------------------------
+python deploy_mod.py --experiment 1
+
+```
+
 ### Folders created during execution
 ```shell script 
 ~/.dataset //Stores original datasets after downloading
